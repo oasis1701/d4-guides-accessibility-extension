@@ -28,10 +28,11 @@ Mobalytics.gg provides excellent Diablo 4 build guides, but the visual paragon b
 
 ## Installation
 
-1. Download or clone this repository
-2. Open Chrome and go to `chrome://extensions`
-3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked"
+1. Download or clone this repository. For example, If you're using NVDA, press B to find the code menu on this page, press enter, then find the link "download ZIP", and press enter.
+2. Extract/unzip the folder to your preferred location. Note, The extracted folder should remain where it is, for your browser to use at any time.
+3. Open Chrome or brave,  and go to `about://extensions`
+3. Enable "Developer mode", (IT is a toggle)
+4. Press enter on  "Load unpacked" button
 5. Select the `Mobalytics Accessibility Chrome Extension` folder
 
 ## Usage
@@ -41,11 +42,16 @@ Mobalytics.gg provides excellent Diablo 4 build guides, but the visual paragon b
 3. Use your screen reader's table navigation to explore the boards
 4. Use heading navigation to jump between boards
 
+## What about Skill points?
+
+When you open a build guide in Mobalytics.gg, underneath the Skill Tree heading, you will find a Leveling path checkbox. Check this to receive a text based leveling path of each skill point.
+Please note, this path is most accurate if you're viewing a leveling guide. End game builds assume you'll have enough skill points and might not have an accurate leveling path
+I will try to make the skill tree accessible for faster end game build reading.
+
 ## Planned Features
 
-- Skill tree accessibility
-- Gear/equipment section accessibility
-- Aspect recommendations accessibility
+I will add more features to cover more inaccessible sections as we find them.
+
 
 ## Technical Notes
 
