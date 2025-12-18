@@ -54,6 +54,43 @@
     },
 
     /**
+     * Get the individual board selector for the current site
+     * @returns {string} CSS selector
+     */
+    getIndividualBoardSelector() {
+      if (this.site === 'maxroll') {
+        return MaxrollParser.SELECTORS.individualBoard;
+      }
+      return ParagonParser.SELECTORS.individualBoard;
+    },
+
+    /**
+     * Wait for individual boards to appear inside the container
+     * Used after MutationObserver detects a new container
+     */
+    waitForIndividualBoards() {
+      const containerSelector = this.getBoardContainerSelector();
+      const boardSelector = this.getIndividualBoardSelector();
+      let attempts = 0;
+      const maxAttempts = 10; // 5 seconds max
+
+      const check = () => {
+        attempts++;
+        const container = document.querySelector(containerSelector);
+        const boards = container?.querySelectorAll(boardSelector);
+
+        if (boards && boards.length > 0) {
+          console.log(`[D4 Paragon Accessibility] Found ${boards.length} board(s) on ${this.site}`);
+          setTimeout(() => this.processBoards(), 500);
+        } else if (attempts < maxAttempts) {
+          setTimeout(check, 500);
+        }
+      };
+
+      check();
+    },
+
+    /**
      * Initialize the extension
      */
     init() {
@@ -86,17 +123,20 @@
      * Wait for paragon board elements to appear in DOM
      */
     waitForBoards() {
-      const maxAttempts = 30; // 30 seconds max
+      const maxAttempts = 5; // 5 seconds max (boards may be lazy-loaded on scroll)
       let attempts = 0;
-      const selector = this.getBoardContainerSelector();
+      const containerSelector = this.getBoardContainerSelector();
+      const boardSelector = this.getIndividualBoardSelector();
 
       const checkForBoards = () => {
         attempts++;
 
-        const boards = document.querySelectorAll(selector);
+        // Wait for individual boards inside the container, not just the container
+        const container = document.querySelector(containerSelector);
+        const individualBoards = container?.querySelectorAll(boardSelector);
 
-        if (boards.length > 0) {
-          console.log(`[D4 Paragon Accessibility] Found ${boards.length} board container(s) on ${this.site}`);
+        if (container && individualBoards && individualBoards.length > 0) {
+          console.log(`[D4 Paragon Accessibility] Found ${individualBoards.length} board(s) on ${this.site}`);
           // Give React a moment to finish rendering
           setTimeout(() => this.processBoards(), 500);
         } else if (attempts < maxAttempts) {
@@ -117,23 +157,32 @@
      * Set up mutation observer for dynamically added boards
      */
     observeForNewBoards() {
-      const selector = this.getBoardContainerSelector();
+      const containerSelector = this.getBoardContainerSelector();
+      const boardSelector = this.getIndividualBoardSelector();
 
       const observer = new MutationObserver((mutations) => {
-        // Check if any new board containers were added
+        // Check if any new board containers OR individual boards were added
         for (const mutation of mutations) {
           if (mutation.addedNodes.length > 0) {
             const hasNewBoard = Array.from(mutation.addedNodes).some(node => {
               if (node.nodeType === Node.ELEMENT_NODE) {
-                return node.matches?.(selector) ||
-                       node.querySelector?.(selector);
+                // Check for container being added
+                if (node.matches?.(containerSelector) || node.querySelector?.(containerSelector)) {
+                  return true;
+                }
+                // Check for individual boards being added (lazy loading)
+                if (node.matches?.(boardSelector) || node.querySelector?.(boardSelector)) {
+                  return true;
+                }
+                return false;
               }
               return false;
             });
 
             if (hasNewBoard && !this.processing) {
               console.log('[D4 Paragon Accessibility] New board detected, reprocessing...');
-              setTimeout(() => this.processBoards(), 500);
+              // Wait for individual boards to appear inside the container
+              this.waitForIndividualBoards();
               break;
             }
           }
